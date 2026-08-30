@@ -1,0 +1,16 @@
+algo: "exact_md"          # Options: "spi" or "exact_md"
+n_iterations: 5
+dt: 0.05
+grid_bins: 41
+ent_coef: 1.0e-6
+gamma: 1.0
+
+# Algorithm specific parameters
+algo_kwargs:
+  md_lambda: 1.0         # Used if algo == "exact_md"
+
+mc_eval:
+  eval_freq: 0            # Evaluate every N iterations (0 to disable)
+  N_mc: 2048              # Total episodes to roll out
+  n_envs: 16               # Number of parallel environments
+  eval_seed: 42           # Locked seed for identical noise across iterations

@@ -1,0 +1,8 @@
+algo: "projected_lqr"
+dt: 0.05
+grid_bins: 41
+
+mc_eval:
+  N_mc: 1024              # Total episodes to roll out
+  n_envs: 16               # Number of parallel environments
+  eval_seed: 42           # Locked seed for identical noise across iterations

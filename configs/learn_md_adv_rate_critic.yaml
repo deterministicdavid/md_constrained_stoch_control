@@ -1,0 +1,30 @@
+algo: "md_adv_rate_critic"
+n_envs: 64
+total_timesteps: 2_000_000
+
+policy:
+  name: "QuantizedTabularQandVandVTgtPolicy"
+  kwargs:
+    grid_bins: 41
+    dt: 0.1
+    action_logits_to_optimizer: false
+
+learning_rate:
+  init: 0.1
+  final_scaling: 0.1
+
+md_lambda:
+  use_schedule: true
+  start_dt_factor: 1.0
+  end_dt_factor: 100000.0
+  multiplier: 0.0001
+
+algo_kwargs:
+  batch_size: 16384
+  buffer_size: 262144
+  learning_starts: 100
+  train_freq: 1
+  gradient_steps: 8
+  tau: 0.001
+  ent_coef: 1e-12
+  gamma: 1.0

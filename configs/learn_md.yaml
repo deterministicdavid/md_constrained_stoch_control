@@ -1,0 +1,28 @@
+algo: "md"
+n_envs: 1
+total_timesteps: 100000
+
+policy:
+  name: "QuantizedTabularPolicy"
+  kwargs:
+    grid_bins: 20
+    action_logits_to_optimizer: false
+
+learning_rate:
+  init: 0.2  # 1e-2 * 20 bins
+  final_scaling: 0.5
+
+md_lambda:
+  use_schedule: true
+  start_dt_factor: 10.0
+  end_dt_factor: 1000000.0  # Simulates decaying purely to 0
+  multiplier: 1.0
+
+algo_kwargs:
+  n_steps: 10000  # Originally 100 * (T/dt) -> 100 * 100 = 10000
+  n_epochs: 2
+  batch_size: 10000
+  ent_coef: 1e-4
+  normalize_advantage: true
+  vf_coef: 0.05
+  gamma: 1.0

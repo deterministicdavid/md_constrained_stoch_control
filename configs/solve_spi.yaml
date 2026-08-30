@@ -1,0 +1,13 @@
+algo: "spi"          # Options: "spi" or "exact_md"
+n_iterations: 20
+dt: 0.05
+grid_bins: 41
+ent_coef: 1.0e-6
+gamma: 1.0
+
+
+mc_eval:
+  eval_freq: 0            # Evaluate every N iterations (0 to disable)
+  N_mc: 1024              # Total episodes to roll out
+  n_envs: 64              # Number of parallel environments
+  eval_seed: 42           # Locked seed for identical noise across iterations

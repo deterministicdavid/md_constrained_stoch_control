@@ -1,0 +1,20 @@
+algo: "sac"
+n_envs: 1
+total_timesteps: 100000
+
+policy:
+  name: "MlpPolicy"
+
+learning_rate:
+  init: 0.01
+  final_scaling: 0.0
+
+algo_kwargs:
+  buffer_size: 100000
+  learning_starts: 1000
+  batch_size: 4096
+  train_freq: 1
+  gradient_steps: 32
+  tau: 0.05
+  ent_coef: 1e-4
+  gamma: 1.0

@@ -1,0 +1,10 @@
+[tool.pyright]
+# Turns off all strict type checking (silences the PyTorch false positives)
+typeCheckingMode = "off"
+
+# Explicitly tell it to strictly flag broken/missing imports
+reportMissingImports = "error"
+reportMissingModuleSource = "error"
+
+# Hides all other diagnostics that default to "warning"
+reportGeneralTypeIssues = "none"

@@ -1,0 +1,14 @@
+.DS_Store
+.vscode
+sde_md.egg-info
+convergence_results*
+scratchpad.png
+build
+venv
+logs_*
+*.so
+__pycache__
+cleanrl_utils
+runs
+results_lr_sweep*
+

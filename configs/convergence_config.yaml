@@ -1,0 +1,47 @@
+# Master Convergence Experiment Configuration
+n_workers: 4
+
+experiments:
+  # Experiment 1: Discrete Action Space (Mirror Descent AND Projected PG vs SPI)
+  - name: "Disc"
+    env_config: "configs/env_config_disc_act.yaml"
+    
+    # NEW: Define multiple algorithms to test against the reference!
+    dpp_configs:
+      "Mirror Descent": "configs/solve_md.yaml"
+      "Projected PG": "configs/solve_proj_pg.yaml"
+      
+    # n_steps_list: [1, 2, 4]
+    n_steps_list: [1, 2, 4, 8, 16, 32, 64, 128, 256, 512]
+    output_dir: "convergence_results_disc"
+    
+    reference:
+      model: "logs_dpp_spi/dpp_policy_spi.pth"
+      env_config: "configs/env_config_disc_act.yaml"
+      dpp_config: "configs/solve_spi.yaml"
+
+    mc_eval:
+      N_mc: 8192
+      n_envs: 8
+      seed: 42
+
+  # Experiment 2: Continuous Action Space (Projected PG vs Continuous SPI)
+  - name: "Cont"
+    env_config: "configs/env_config_cont_act.yaml"
+    dpp_configs:
+      "Mirror Descent": "configs/solve_cont_act_md.yaml"
+      "Projected PG": configs/solve_cont_act_proj_pg.yaml
+    
+    #n_steps_list: [1, 2, 4]
+    n_steps_list: [1, 2, 4, 8, 16, 64, 128, 256]
+    output_dir: "convergence_results_cont"
+
+    reference:
+      model: "logs_dpp_cont_act_pia/dpp_policy_cont_act_pia.pth"
+      env_config: "configs/env_config_cont_act.yaml"
+      dpp_config: "configs/solve_cont_act_pia.yaml"
+
+    mc_eval:
+      N_mc: 8192
+      n_envs: 8
+      seed: 42

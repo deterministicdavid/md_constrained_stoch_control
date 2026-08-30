@@ -1,0 +1,16 @@
+-e .
+numpy
+scipy
+torch
+gymnasium
+stable-baselines3
+numba
+matplotlib
+pybind11
+tensorboard
+tyro
+PyYAML
+black
+pytest
+mypy
+pyright

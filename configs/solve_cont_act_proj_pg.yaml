@@ -1,0 +1,14 @@
+algo: "cont_act_proj_pg"
+dt: 0.05
+grid_bins: 101
+gamma: 1.0
+ent_coef: 0.0
+n_iterations: 30
+algo_kwargs:
+  lr: 0.005 # Learning rate for action updates
+  action_radius: 10
+mc_eval:
+  eval_freq: 0
+  N_mc: 8192
+  n_envs: 16
+  eval_seed: 42
