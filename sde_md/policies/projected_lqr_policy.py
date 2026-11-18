@@ -63,6 +63,11 @@ class ProjectedLQRPolicy:
 
         return u_projected, None
 
+    def _predict(self, obs, deterministic=True):
+        """SB3-style hook used by run_mc_eval: returns the actions as a tensor."""
+        actions_np, _ = self.predict(obs, deterministic=deterministic)
+        return torch.as_tensor(actions_np, dtype=torch.float32, device=self.device)
+
     # We add predict_values so you can plot the LQR value function!
     def predict_values(self, obs):
         if not isinstance(obs, torch.Tensor):

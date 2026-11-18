@@ -22,9 +22,9 @@ Pre-saved experiment configurations are in `configs`.
 cd sde_md/envs/
 python build_sde_core.py build_ext --inplace
 ```
-then, while still in the same directory, check we can init the env and run tests
+then, back to repo root and check we can init the env and run tests
 ```
-python sde_env.py 
+python sde_md/envs/sde_env.py
 ```
 Then `cd ../../` to go back to the level on which `run_rl.py`, `run_dpp_based.py`, etc. sit. 
 
