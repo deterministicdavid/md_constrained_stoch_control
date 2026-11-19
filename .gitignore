@@ -11,4 +11,5 @@ __pycache__
 cleanrl_utils
 runs
 results_lr_sweep*
+convergence_semilog.pdf
 
