@@ -1,0 +1,36 @@
+n_workers: 4
+experiments:
+  - name: "Disc_tau_0.1"
+    env_config: "configs/env_config_disc_act.yaml"
+    dpp_configs:
+      "Mirror Descent": "configs/solve_md_tau_0.1.yaml"
+    n_steps_list: [1, 16, 32, 48, 64, 96, 128, 160, 192, 224, 256]
+    output_dir: "convergence_results_disc_tau_0.1"
+    reference:
+      model: "logs_dpp_spi/dpp_policy_spi_tau_0.1.pth"
+      env_config: "configs/env_config_disc_act.yaml"
+      dpp_config: "configs/solve_spi_tau_0.1.yaml"
+    mc_eval: {N_mc: 8192, n_envs: 8, seed: 42}
+  - name: "Disc_tau_0.05"
+    env_config: "configs/env_config_disc_act.yaml"
+    dpp_configs:
+      "Mirror Descent": "configs/solve_md_tau_0.05.yaml"
+    n_steps_list: [1, 16, 32, 48, 64, 96, 128, 160, 192, 224, 256]
+    output_dir: "convergence_results_disc_tau_0.05"
+    reference:
+      model: "logs_dpp_spi/dpp_policy_spi_tau_0.05.pth"
+      env_config: "configs/env_config_disc_act.yaml"
+      dpp_config: "configs/solve_spi_tau_0.05.yaml"
+    mc_eval: {N_mc: 8192, n_envs: 8, seed: 42}
+  - name: "Disc_tau_0.02"
+    env_config: "configs/env_config_disc_act.yaml"
+    dpp_configs:
+      "Mirror Descent": "configs/solve_md_tau_0.02.yaml"
+    n_steps_list: [1, 16, 32, 48, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384]
+    output_dir: "convergence_results_disc_tau_0.02"
+    reference:
+      model: "logs_dpp_spi/dpp_policy_spi_tau_0.02.pth"
+      env_config: "configs/env_config_disc_act.yaml"
+      dpp_config: "configs/solve_spi_tau_0.02.yaml"
+    mc_eval: {N_mc: 8192, n_envs: 8, seed: 42}
+  

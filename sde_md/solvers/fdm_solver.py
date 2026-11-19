@@ -203,7 +203,7 @@ class FDMValueEvaluator:
             RHS[~self.is_inside] = self.terminal_rewards[~self.is_inside]
 
             # Iterative BiCGSTAB Solver (Uses future step V_sol[k+1] as initial guess)
-            v_next, info = splinalg.bicgstab(M, RHS, x0=V_sol[k + 1, :], rtol=1e-8)
+            v_next, info = splinalg.bicgstab(M, RHS, x0=V_sol[k + 1, :], rtol=1e-10)
 
             if info == 0:
                 V_sol[k, :] = v_next

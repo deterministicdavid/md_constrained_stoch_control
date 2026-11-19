@@ -23,8 +23,13 @@ class QuantizedTabularPolicy(ActorCriticPolicy):
         dt: float = 0.1,
         T: float = 1.0,
         action_logits_to_optimizer: bool = False,
+        param_dtype: torch.dtype = torch.float32,
         **kwargs
     ):
+        # dtype of the tabular parameters. float32 (default) is what the RL code uses;
+        # the DPP-based solvers (SPI, exact MD) can request float64 for higher precision.
+        # Must be set before super().__init__, which calls self._build().
+        self.param_dtype = param_dtype
         self.grid_bins = grid_bins
         self.radius = radius
         self.spatial_dim = observation_space.shape[0] - 1
@@ -53,10 +58,17 @@ class QuantizedTabularPolicy(ActorCriticPolicy):
         """
         self.tabular_params = nn.ParameterDict(
             {
+                # randn(...) * 0.0 kept (rather than zeros) so the global RNG stream,
+                # and hence seeded RL runs, are unchanged for the default float32.
                 "action_logits": nn.Parameter(
-                    torch.randn(self.total_states, self.action_dim) * 0.0
+                    torch.randn(
+                        self.total_states, self.action_dim, dtype=self.param_dtype
+                    )
+                    * 0.0
                 ),
-                "value_table": nn.Parameter(torch.randn(self.total_states, 1) * 0.0),
+                "value_table": nn.Parameter(
+                    torch.randn(self.total_states, 1, dtype=self.param_dtype) * 0.0
+                ),
             }
         )
 

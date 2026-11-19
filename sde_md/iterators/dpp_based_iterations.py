@@ -283,32 +283,29 @@ class DPPBasedIterations(ABC):
                 )
                 new_params[policy_indices] = joint_params_new
 
-            # 4. Write back to PyTorch
+            # 4. Write back to PyTorch, keeping each parameter's own dtype
+            # (float32 or float64), so no precision is lost on the way back.
             with torch.no_grad():
                 if hasattr(self.policy, "action_logits"):
-                    self.policy.action_logits.copy_(
-                        torch.tensor(
-                            new_params, dtype=torch.float32, device=self.policy.device
-                        )
-                    )
-                    self.policy.value_table.copy_(
-                        torch.tensor(
-                            new_values, dtype=torch.float32, device=self.policy.device
-                        )
-                    )
+                    target_params = self.policy.action_logits
+                    target_values = self.policy.value_table
                 elif hasattr(self.policy, "tabular_params"):
                     is_prob_based = "action_probs" in self.policy.tabular_params
                     param_key = "action_probs" if is_prob_based else "action_logits"
-                    self.policy.tabular_params[param_key].copy_(
-                        torch.tensor(
-                            new_params, dtype=torch.float32, device=self.policy.device
-                        )
+                    target_params = self.policy.tabular_params[param_key]
+                    target_values = self.policy.tabular_params["value_table"]
+                else:
+                    raise ValueError("Could not find tabular parameters.")
+                target_params.copy_(
+                    torch.tensor(
+                        new_params, dtype=target_params.dtype, device=self.policy.device
                     )
-                    self.policy.tabular_params["value_table"].copy_(
-                        torch.tensor(
-                            new_values, dtype=torch.float32, device=self.policy.device
-                        )
+                )
+                target_values.copy_(
+                    torch.tensor(
+                        new_values, dtype=target_values.dtype, device=self.policy.device
                     )
+                )
 
             nvec_arg = getattr(self.policy.action_space, "nvec", None)
             self.policy.normalize_policy_(nvec=nvec_arg)

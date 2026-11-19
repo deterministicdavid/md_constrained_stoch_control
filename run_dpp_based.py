@@ -78,6 +78,8 @@ def setup_env_and_policy(env_cfg, dpp_cfg):
             action_space=env.action_space,
             lr_schedule=lambda _: 0.0,
             action_logits_to_optimizer=False,
+            # float64 tables: float32 rounding limits SPI/MD convergence to ~1e-6
+            param_dtype=torch.float64,
             **policy_kwargs,
         )
     elif algo == "projected_pg":
