@@ -26,8 +26,12 @@ class QuantizedTabularContActionPolicy(ActorCriticPolicy):
         action_radius=1.0,
         dt=0.01,
         T=1.0,
+        param_dtype: torch.dtype = torch.float32,
         **kwargs
     ):
+        # dtype of the tabular parameters; the DPP solvers request float64.
+        # Must be set before super().__init__, which calls self._build().
+        self.param_dtype = param_dtype
         self.grid_bins = grid_bins
         self.radius = radius  # Spatial boundary
         self.action_radius = action_radius  # Ball boundary R for actions
@@ -49,9 +53,11 @@ class QuantizedTabularContActionPolicy(ActorCriticPolicy):
         self.tabular_params = nn.ParameterDict(
             {
                 "action_table": nn.Parameter(
-                    torch.zeros(self.total_states, self.action_dim)
+                    torch.zeros(self.total_states, self.action_dim, dtype=self.param_dtype)
                 ),
-                "value_table": nn.Parameter(torch.zeros(self.total_states, 1)),
+                "value_table": nn.Parameter(
+                    torch.zeros(self.total_states, 1, dtype=self.param_dtype)
+                ),
             }
         )
 

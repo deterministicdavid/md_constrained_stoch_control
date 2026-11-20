@@ -95,6 +95,7 @@ def setup_env_and_policy(env_cfg, dpp_cfg):
         policy_kwargs["action_radius"] = dpp_cfg["algo_kwargs"].get(
             "action_radius", 1.0
         )
+        policy_kwargs["param_dtype"] = torch.float64
         policy = QuantizedTabularContActionPolicy(
             observation_space=env.observation_space,
             action_space=env.action_space,
@@ -106,6 +107,7 @@ def setup_env_and_policy(env_cfg, dpp_cfg):
         policy_kwargs["action_radius"] = dpp_cfg["algo_kwargs"].get(
             "action_radius", 1.0
         )
+        policy_kwargs["param_dtype"] = torch.float64
         policy = QuantizedTabularZPolicy(
             observation_space=env.observation_space,
             action_space=env.action_space,
@@ -117,6 +119,7 @@ def setup_env_and_policy(env_cfg, dpp_cfg):
         policy_kwargs["action_radius"] = dpp_cfg["algo_kwargs"].get(
             "action_radius", 1.0
         )
+        policy_kwargs["param_dtype"] = torch.float64
         policy = QuantizedTabularContActionPolicy(
             observation_space=env.observation_space,
             action_space=env.action_space,

@@ -1,0 +1,21 @@
+n_workers: 4
+experiments:
+  # Example 3.1 (continuous actions on a ball), step sizes tuned separately
+  # (lr_sweep_cont_30), float64 tables
+  - name: "Cont_tuned"
+    env_config: "configs/env_config_cont_act.yaml"
+    dpp_configs:
+      "Mirror Descent": "configs/solve_cont_act_md_tuned.yaml"
+      "Projected PG": "configs/solve_cont_act_proj_pg_tuned.yaml"
+    n_steps_list: [1, 2, 4, 8, 16, 32, 64, 128, 256]
+    output_dir: "convergence_results_cont_tuned"
+
+    reference:
+      model: "logs_dpp_cont_act_pia/dpp_policy_cont_act_pia_f64.pth"
+      env_config: "configs/env_config_cont_act.yaml"
+      dpp_config: "configs/solve_cont_act_pia_f64.yaml"
+
+    mc_eval:
+      N_mc: 8192
+      n_envs: 8
+      seed: 42

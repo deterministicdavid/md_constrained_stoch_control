@@ -207,11 +207,11 @@ class ContinuousActionProjectedGradient(DPPBasedIterations):
             with torch.no_grad():
                 self.policy.tabular_params[table_key].copy_(
                     torch.tensor(
-                        new_params, dtype=torch.float32, device=self.policy.device
+                        new_params, dtype=self.policy.tabular_params[table_key].dtype, device=self.policy.device
                     )
                 )
                 self.policy.tabular_params["value_table"].copy_(
                     torch.tensor(
-                        new_values, dtype=torch.float32, device=self.policy.device
+                        new_values, dtype=self.policy.tabular_params["value_table"].dtype, device=self.policy.device
                     )
                 )

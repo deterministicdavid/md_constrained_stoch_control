@@ -1,0 +1,14 @@
+algo: "cont_act_md"
+dt: 0.05
+grid_bins: 101
+gamma: 1.0
+ent_coef: 0.0
+n_iterations: 64
+algo_kwargs:
+  md_lambda: 0.03 # dual step size, best in the 30-iteration sweep
+  action_radius: 10
+mc_eval:
+  eval_freq: 0
+  N_mc: 8192
+  n_envs: 16
+  eval_seed: 42

@@ -1,5 +1,5 @@
 output_dir: "results_lr_sweep_3"
-n_iterations: 3        # Fixed number of iterations for every learning rate trial
+n_iterations: 30        # Fixed number of iterations for every learning rate trial
 
 # Monte Carlo rollout evaluation settings
 mc_eval:
@@ -12,17 +12,17 @@ n_workers: 4
 
 # Experiments list: Compare different algorithms or configurations
 experiments:
-  - name: "Soft Policy MD"
-    env_config: "configs/env_config_disc_act.yaml"
-    dpp_config: "configs/solve_md.yaml"
-    param_name: "md_lambda"
-    param_values: [0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 4.0, 8.0, 16]
+  # - name: "Soft Policy MD"
+  #   env_config: "configs/env_config_disc_act.yaml"
+  #   dpp_config: "configs/solve_md.yaml"
+  #   param_name: "md_lambda"
+  #   param_values: [0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 4.0, 8.0, 16]
 
-  - name: "Soft Policy Proj PG"
-    env_config: "configs/env_config_disc_act.yaml"
-    dpp_config: "configs/solve_proj_pg.yaml"
-    param_name: "pg_lr"
-    param_values: [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1.0, 2.0, 4.0]
+  # - name: "Soft Policy Proj PG"
+  #   env_config: "configs/env_config_disc_act.yaml"
+  #   dpp_config: "configs/solve_proj_pg.yaml"
+  #   param_name: "pg_lr"
+  #   param_values: [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1.0, 2.0, 4.0]
 
   - name: "Cont. Act MD"
     env_config: "configs/env_config_cont_act.yaml"

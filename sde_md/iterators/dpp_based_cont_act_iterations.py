@@ -98,10 +98,11 @@ class ContinuousActionMirrorDescent(DPPBasedIterations):
         # tau_term = self.ent_coef * (2 * u) / (R2 - np.sum(u**2, axis=-1, keepdims=True) + 1e-12)
         tau_term = self.ent_coef * current_Z
 
-        # Mirror Flow Update: dZ/ds = -(N^T nabla V + u + tau * nabla psi(u))
-        # (Assuming N is the Identity matrix for the environment drift)
-        dZ_x = -(grad_V_x + 2.0 * self.cost_factor * u[:, 0] + tau_term[:, 0])
-        dZ_y = -(grad_V_y + 2.0 * self.cost_factor * u[:, 1] + tau_term[:, 1])
+        # Mirror flow in the code's reward convention (V is maximised, reward = -c|a|^2 dt):
+        # dZ/ds = grad V - 2c u - tau * grad psi(u), with grad psi(u) = Z.
+        # (Same as Example 3.1's dZ/ds = -(N^T grad V + u + tau grad psi(u)) in the cost convention.)
+        dZ_x = -(grad_V_x - 2.0 * self.cost_factor * u[:, 0] - tau_term[:, 0])
+        dZ_y = -(grad_V_y - 2.0 * self.cost_factor * u[:, 1] - tau_term[:, 1])
 
         new_Z_x = current_Z[:, 0] - md_lambda * dZ_x
         new_Z_y = current_Z[:, 1] - md_lambda * dZ_y
@@ -206,12 +207,12 @@ class ContinuousActionMirrorDescent(DPPBasedIterations):
             with torch.no_grad():
                 self.policy.tabular_params["Z_table"].copy_(
                     torch.tensor(
-                        new_params, dtype=torch.float32, device=self.policy.device
+                        new_params, dtype=self.policy.tabular_params["Z_table"].dtype, device=self.policy.device
                     )
                 )
                 self.policy.tabular_params["value_table"].copy_(
                     torch.tensor(
-                        new_values, dtype=torch.float32, device=self.policy.device
+                        new_values, dtype=self.policy.tabular_params["value_table"].dtype, device=self.policy.device
                     )
                 )
 

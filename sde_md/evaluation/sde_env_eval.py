@@ -422,7 +422,7 @@ class PolicyEvaluator:
         """
         
         # --- 0. Get MC evaluation ---
-        start_radius = 3.5
+        start_radius = 4.8
         theta = np.pi / num_episodes
         t0 = 0.0
         x0 = np.array(

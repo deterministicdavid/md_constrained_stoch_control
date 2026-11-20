@@ -1,0 +1,24 @@
+output_dir: "results_lr_sweep_cont_30"
+n_iterations: 30        # matches N in Table C.1
+
+# Monte Carlo rollout evaluation settings
+mc_eval:
+  n_envs: 16
+  N_mc: 8192
+  seed: 42
+
+# Number of parallel process workers
+n_workers: 4
+
+experiments:
+  - name: "Cont. Act MD"
+    env_config: "configs/env_config_cont_act.yaml"
+    dpp_config: "configs/solve_cont_act_md.yaml"
+    param_name: "md_lambda"
+    param_values: [0.003, 0.01, 0.03, 0.1, 0.3, 0.5, 1.0, 2.0, 4.0]
+
+  # - name: "Cont. Act Proj PG"
+  #   env_config: "configs/env_config_cont_act.yaml"
+  #   dpp_config: "configs/solve_cont_act_proj_pg.yaml"
+  #   param_name: "lr"
+  #   param_values: [0.001, 0.003, 0.005, 0.01, 0.03, 0.1, 0.25, 1.0, 3.0, 10.0, 30.0, 50.0]

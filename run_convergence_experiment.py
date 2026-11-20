@@ -9,7 +9,9 @@ Usage:
 """
 
 import argparse
+import contextlib
 import copy
+import io
 import csv
 import math
 import multiprocessing as mp
@@ -165,6 +167,13 @@ def evaluate_checkpoint(n_steps, env_cfg, dpp_cfg, V_ref, ref_param_tuple, n_x, 
     solver = create_solver(env, policy, dpp_cfg, dpp_cfg["grid_bins"], float(dpp_cfg["ent_coef"]), dpp_cfg.get("algo_kwargs", {}).get("action_radius", 1.0))
     solver.iterate(n_iterations=n_steps, **copy.deepcopy(dpp_cfg.get("algo_kwargs", {})))
 
+    metrics = evaluate_current(solver, policy, env_cfg, V_ref, ref_param_tuple, n_x, mc_cfg, do_mc)
+    metrics["wall_time_s"] = time.time() - t_start
+    return metrics
+
+
+def evaluate_current(solver, policy, env_cfg, V_ref, ref_param_tuple, n_x, mc_cfg, do_mc):
+    """Metrics of the solver's current policy against the reference."""
     metrics = compute_policy_metrics(extract_policy_parameters(policy), ref_param_tuple, n_x)
     V_cur = solver.fdm_solver.solve()
     diff_v = V_cur - V_ref
@@ -178,13 +187,56 @@ def evaluate_checkpoint(n_steps, env_cfg, dpp_cfg, V_ref, ref_param_tuple, n_x, 
         metrics["mc_return"] = ret
         metrics["mc_return_se"] = ret_std / math.sqrt(mc_cfg["N_mc"])
 
-    metrics["wall_time_s"] = time.time() - t_start
     return metrics
 
 
 def _worker_run(args):
     n_steps, env_cfg, dpp_cfg, V_ref, ref_param_tuple, n_x, mc_cfg, do_mc = args
     return n_steps, evaluate_checkpoint(n_steps, env_cfg, dpp_cfg, V_ref, ref_param_tuple, n_x, mc_cfg, do_mc)
+
+
+def run_checkpoints_incremental(n_steps_list, env_cfg, dpp_cfg, V_ref, ref_param_tuple, n_x,
+                                mc_cfg, do_mc, label="Algorithm", output_dir=None):
+    """One run up to max(n_steps_list), evaluated at every checkpoint on the way.
+
+    The iterators keep their state only in the policy tables, so calling iterate()
+    again continues the same run: the iterates are the same as for separate runs
+    from scratch. wall_time_s is cumulative from the start of the run.
+    """
+    t_start = time.time()
+    env, policy = setup_env_and_policy(env_cfg, dpp_cfg)[:2]
+    solver = create_solver(env, policy, dpp_cfg, dpp_cfg["grid_bins"], float(dpp_cfg["ent_coef"]),
+                           dpp_cfg.get("algo_kwargs", {}).get("action_radius", 1.0))
+    safe_label = "".join(c if c.isalnum() else "_" for c in label)
+    results, done, rows = {}, 0, []
+    n_max = max(n_steps_list)
+    for n in sorted(set(n_steps_list)):
+        while done < n:
+            # One iteration at a time: same iterates and cost, but a single labelled
+            # progress line instead of the iterator's own per-iteration log.
+            buf = io.StringIO()
+            with contextlib.redirect_stdout(buf):
+                solver.iterate(n_iterations=1, **copy.deepcopy(dpp_cfg.get("algo_kwargs", {})))
+            done += 1
+            for line in buf.getvalue().splitlines():
+                if line.strip() and not line.startswith("Iter:"):
+                    print(f"[{label}] {line}", flush=True)  # e.g. solver fallback warnings
+            print(f"[{label}] iteration {done}/{n_max} | {time.time() - t_start:.0f}s", flush=True)
+        m = evaluate_current(solver, policy, env_cfg, V_ref, ref_param_tuple, n_x, mc_cfg, do_mc)
+        m["wall_time_s"] = time.time() - t_start
+        results[n] = m
+        print(f"[{label}] reached N={n:<4} | value Linf {m['value_linf']:.2e} | "
+              f"value relL2 {m['value_rel_l2']:.2e} | {m['wall_time_s']:.0f}s cumulative", flush=True)
+        if output_dir is not None:
+            rows.append({"algo_label": label, "algo": dpp_cfg.get("algo"), "n_steps": n, **m})
+            write_csv(rows, os.path.join(output_dir, f"convergence_partial_{safe_label}.csv"))
+    return results
+
+
+def _worker_run_incremental(args):
+    label, n_steps_list, env_cfg, dpp_cfg, V_ref, ref_param_tuple, n_x, mc_cfg, do_mc, output_dir = args
+    return label, run_checkpoints_incremental(n_steps_list, env_cfg, dpp_cfg, V_ref, ref_param_tuple, n_x,
+                                              mc_cfg, do_mc, label=label, output_dir=output_dir)
 
 
 def write_csv(rows, csv_path):
@@ -334,6 +386,28 @@ def run_experiment(exp_cfg, global_config, args):
 
     rows = []
     
+    incremental = bool(getattr(args, "incremental", False) or exp_cfg.get("incremental", False)
+                       or global_config.get("incremental", False))
+    incremental_results = {}
+    if incremental:
+        print(f"[{exp_name}] Incremental mode: one run per algorithm up to N={max(n_steps_list)}")
+        tasks = [
+            (algo_label, list(n_steps_list), copy.deepcopy(env_cfg), load_yaml(dpp_path),
+             V_ref, ref_param_tuple, n_x, mc_cfg, do_mc, output_dir)
+            for algo_label, dpp_path in dpp_configs.items()
+        ]
+        n_par = min(n_workers, len(tasks))
+        if n_par > 1:
+            ctx = mp.get_context("spawn")
+            with ProcessPoolExecutor(max_workers=n_par, mp_context=ctx) as pool:
+                for fut in as_completed([pool.submit(_worker_run_incremental, t) for t in tasks]):
+                    label, res = fut.result()
+                    incremental_results[label] = res
+        else:
+            for t in tasks:
+                label, res = _worker_run_incremental(t)
+                incremental_results[label] = res
+
     # Loop over all algorithms to test in this experiment
     for algo_label, dpp_path in dpp_configs.items():
         print(f"\n--- Evaluating Algorithm: {algo_label} ---")
@@ -350,7 +424,9 @@ def run_experiment(exp_cfg, global_config, args):
         )
 
         results = {}
-        if n_workers > 1 and len(n_steps_list) > 1:
+        if incremental:
+            results = incremental_results[algo_label]
+        elif n_workers > 1 and len(n_steps_list) > 1:
             ctx = mp.get_context("spawn")
             with ProcessPoolExecutor(max_workers=n_workers, mp_context=ctx) as pool:
                 futures = {pool.submit(_worker_run, (n, *base_args)): n for n in n_steps_list}
@@ -474,6 +550,7 @@ if __name__ == "__main__":
     parser.add_argument("--exp", type=str, default=None, help="Name of specific experiment to run")
     parser.add_argument("--skip_mc", action="store_true", help="Skip MC rollout evaluation")
     parser.add_argument("--load_ref", action="store_true", help="Load existing reference model without recomputing")
+    parser.add_argument("--incremental", action="store_true", help="One run per algorithm up to max N, evaluated at each checkpoint (instead of a separate run per N)")
     parser.add_argument("--plot_csv", nargs="+", type=str, default=None, help="Re-plot existing CSV results without re-running computation")
     args = parser.parse_args()
     main(args)

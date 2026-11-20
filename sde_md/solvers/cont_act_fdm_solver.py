@@ -89,7 +89,7 @@ class ContinuousActionsFDMValueEvaluator(FDMValueEvaluator):
             RHS = V_sol[k + 1, :] + self.dt * R_pi
             RHS[~self.is_inside] = self.terminal_rewards[~self.is_inside]
 
-            v_next, info = splinalg.bicgstab(M, RHS, x0=V_sol[k + 1, :], rtol=1e-8)
+            v_next, info = splinalg.bicgstab(M, RHS, x0=V_sol[k + 1, :], rtol=1e-10)
 
             if info == 0:
                 V_sol[k, :] = v_next
